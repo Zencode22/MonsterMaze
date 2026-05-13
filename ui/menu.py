@@ -88,23 +88,29 @@ class MainMenu:
     
     def _choose_difficulty(self) -> str:
         """Let player choose monster AI difficulty."""
-        print("\nChoose your monster AI difficulty:")
-        print("  [1] BFS Monster (B) - SMART: Finds shortest path - HARD MODE")
-        print("  [2] DFS Monster (D) - WANDERER: Explores randomly - EASY MODE")
+        print("\nChoose your pursuer:")
+        print("  [1] Draugr (D) - Undead warrior from Norse mythology")
+        print("      Wanders the maze with relentless but meandering determination")
+        print("      EASY MODE")
+        print("  [2] Baba Yaga (B) - Cunning witch from Slavic folklore")
+        print("      Flies through the maze, always knowing the shortest path to her prey")
+        print("      HARD MODE")
         
         while True:
             choice = input("\nYour choice (1/2): ").strip()
             if choice == '1':
-                return "BFS"
-            elif choice == '2':
                 return "DFS"
+            elif choice == '2':
+                return "BFS"
             else:
                 print("Please choose 1 or 2!")
     
     def _show_game_intro(self, monster: Monster):
         """Show game introduction and controls."""
         print("\n" + "=" * 60)
-        print(f"Monster: {monster.name} ({monster.char}) - {monster.difficulty}")
+        print(f"Your Pursuer: {monster.name} ({monster.char})")
+        print(f"Origin: {monster.origin}")
+        print(f"Difficulty: {monster.difficulty}")
         self.display.print_controls()
         self.display.print_legend(monster.ai_type)
         print("\nTIP: Use walls to your advantage!")
@@ -121,17 +127,20 @@ class MainMenu:
         print("\nOBJECTIVE:")
         print("  Navigate through the maze from the top-left corner")
         print("  to the bottom-right exit without being caught!")
-        print("\nTHE MONSTER:")
-        print("  A monster guards the exit and uses AI pathfinding to hunt you.")
-        print("  Choose between two monster types:")
-        print("\n  BFS Monster (B) - SMART HUNTER")
-        print("  * Uses Breadth-First Search to find the SHORTEST path")
-        print("  * Always knows the quickest route to catch you")
-        print("  * HARD MODE - For experienced players")
-        print("\n  DFS Monster (D) - WANDERER")
-        print("  * Uses Depth-First Search and explores randomly")
-        print("  * Often takes longer, winding paths")
-        print("  * EASY MODE - Good for learning the maze")
+        print("\nTHE PURSUERS:")
+        print("  Choose which creature hunts you through the maze:")
+        print("\n  Draugr (D) - The Wandering Dead")
+        print("  * Origin: Norse mythology")
+        print("  * An undead warrior who guards burial mounds")
+        print("  * Wanders relentlessly, exploring every passage")
+        print("  * Can be outsmarted with clever movement")
+        print("  * EASY MODE")
+        print("\n  Baba Yaga (B) - The Witch of the Woods")
+        print("  * Origin: Slavic folklore")
+        print("  * A fearsome witch who flies in a magical mortar")
+        print("  * Always knows the shortest path to her prey")
+        print("  * Cunning and efficient in her hunt")
+        print("  * HARD MODE")
         print("\nCONTROLS:")
         print("  W - Move Up")
         print("  A - Move Left")
@@ -140,21 +149,16 @@ class MainMenu:
         print("  Q - Quit game")
         print("\nLEGEND:")
         print("  P - Player")
-        print("  B - BFS Monster")
-        print("  D - DFS Monster")
+        print("  D - Draugr (DFS Wandering Monster)")
+        print("  B - Baba Yaga (BFS Hunting Monster)")
         print("  E - Exit")
         print("  # - Wall")
         print("  . - Floor")
         print("\nTIPS:")
         print("  * Use walls to block the monster's path")
-        print("  * The BFS monster always takes the shortest route")
-        print("  * The DFS monster can be tricked into dead ends")
+        print("  * Baba Yaga always takes the shortest route - stay on the move!")
+        print("  * Draugr can be tricked into dead ends and long corridors")
         print("  * Plan your route before you start moving")
-        print("\nRATINGS:")
-        print(f"  *** LEGENDARY - {GameConfig.LEGENDARY_THRESHOLD} moves or less")
-        print(f"  ** GREAT - {GameConfig.GREAT_THRESHOLD} moves or less")
-        print(f"  * GOOD - {GameConfig.GOOD_THRESHOLD} moves or less")
-        print("  SURVIVOR - Made it out alive!")
         
         input("\nPress Enter to return to main menu...")
 
@@ -182,7 +186,6 @@ class GameLoop:
         self.monster = monster
         self.exit_pos = exit_pos
         self.display = DisplayManager()
-        self.turns = 0
         self.running = True
     
     def run(self):
@@ -192,7 +195,6 @@ class GameLoop:
             self.display.print_banner()
             
             # Render game state
-            self.display.print_game_header(self.turns, self.player.moves_made)
             game_state = self.renderer.render_game_state(
                 self.player.position,
                 self.monster.position,
@@ -215,21 +217,17 @@ class GameLoop:
             
             # Monster move
             self._handle_monster_move()
-            
-            self.turns += 1
     
     def _check_game_over(self) -> bool:
         """Check if the game is over (win or lose)."""
         if self.player.position == self.monster.position:
-            print(f"\nGAME OVER - The {self.monster.name} caught you!")
-            self._show_stats()
+            print(f"\nGAME OVER - {self.monster.name} caught you!")
+            input("\nPress Enter to return to main menu...")
             return True
         
         if self.player.position == self.exit_pos:
-            print("\nYOU WIN - You escaped the Monster Maze!")
-            self._show_stats()
-            rating = self.display.get_rating(self.player.moves_made)
-            print(f"Rating: {rating}")
+            print(f"\nYOU WIN - You escaped {self.monster.name}!")
+            input("\nPress Enter to return to main menu...")
             return True
         
         return False
@@ -292,15 +290,6 @@ class GameLoop:
             if path:
                 steps = len(path) - 1
                 if self.monster.ai_type == "BFS":
-                    print(f"BFS Monster takes shortest path! ({steps} steps to you)")
+                    print(f"{self.monster.name} flies toward you! ({steps} steps away)")
                 else:
-                    print(f"DFS Monster wanders... ({steps} steps to you)")
-    
-    def _show_stats(self):
-        """Display end-game statistics."""
-        print(f"\nGAME STATISTICS:")
-        print(f"  Turns survived: {self.turns}")
-        print(f"  Moves made: {self.player.moves_made}")
-        print(f"  Nodes explored by monster: {self.monster.total_nodes_explored}")
-        
-        input("\nPress Enter to return to main menu...")
+                    print(f"{self.monster.name} shambles through the maze... ({steps} steps away)")

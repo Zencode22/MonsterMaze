@@ -63,9 +63,19 @@ class Monster:
         self.start_pos = start_pos
         self.ai_type = ai_type  # "BFS" or "DFS"
         self.total_nodes_explored = 0
-        self.char = 'B' if ai_type == 'BFS' else 'D'
-        self.name = "BFS Hunter" if ai_type == 'BFS' else "DFS Wanderer"
-        self.difficulty = "HARD" if ai_type == 'BFS' else "EASY"
+        
+        if ai_type == "BFS":
+            self.char = 'B'
+            self.name = "Baba Yaga"
+            self.origin = "Slavic folklore"
+            self.description = "A cunning witch who flies through the forest in a mortar, wielding a pestle. She always knows the shortest path to her prey."
+            self.difficulty = "HARD"
+        else:
+            self.char = 'D'
+            self.name = "Draugr"
+            self.origin = "Norse mythology"
+            self.description = "An undead warrior who wanders the burial mounds, seeking intruders with relentless but meandering determination."
+            self.difficulty = "EASY"
     
     def chase(self, pathfinder, player_pos: Pos) -> Optional[Pos]:
         """
@@ -78,12 +88,22 @@ class Monster:
         Returns:
             New monster position, or None if no valid path
         """
-        path, nodes = pathfinder.find_path(self.position, player_pos, self.ai_type)
-        self.total_nodes_explored += nodes
-        
-        if path and len(path) > 1:
-            self.position = path[1]  # Move one step along path
-            return self.position
+        if self.ai_type == "BFS":
+            # BFS: Always recalculate shortest path to player
+            path, nodes = pathfinder.find_path(self.position, player_pos, self.ai_type)
+            self.total_nodes_explored += nodes
+            
+            if path and len(path) > 1:
+                self.position = path[1]  # Move one step along path
+                return self.position
+        else:
+            # DFS: Recalculate path each turn based on player's new position
+            path, nodes = pathfinder.find_path(self.position, player_pos, self.ai_type)
+            self.total_nodes_explored += nodes
+            
+            if path and len(path) > 1:
+                self.position = path[1]  # Move one step along path
+                return self.position
         
         return None
     
@@ -95,3 +115,4 @@ class Monster:
         """Reset monster to starting position."""
         self.position = self.start_pos
         self.total_nodes_explored = 0
+        self.current_path = None

@@ -3,6 +3,7 @@ Pathfinding algorithms: BFS and DFS implementations.
 """
 
 from collections import deque
+import random
 from typing import Dict, List, Optional, Set, Tuple, Union
 from .grid import Maze, Pos
 
@@ -89,9 +90,10 @@ class PathFinder:
     
     def dfs_find_path(self, start: Pos, goal: Pos) -> Tuple[Optional[List[Pos]], Set[Pos], int]:
         """
-        Depth-First Search - iterative implementation.
+        Depth-First Search - iterative implementation with wandering behavior.
         
         Uses a stack (Python list) for LIFO processing.
+        Adds randomness to neighbor order for wandering behavior.
         Marks nodes as visited when pushed, not when popped.
         
         Args:
@@ -117,7 +119,11 @@ class PathFinder:
                 path = self.reconstruct_path(parent, start, goal)
                 return path, visited, nodes_explored
             
-            for neighbor in self.maze.get_neighbors(current):
+            # Get neighbors and shuffle them for wandering behavior
+            neighbors = self.maze.get_neighbors(current)
+            random.shuffle(neighbors)
+            
+            for neighbor in neighbors:
                 if neighbor not in visited:
                     visited.add(neighbor)
                     parent[neighbor] = current
